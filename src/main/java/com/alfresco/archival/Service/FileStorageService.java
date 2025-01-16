@@ -169,10 +169,37 @@ public class FileStorageService {
                 createFolderIfNotExists(subfolderPath.toString()); // Create subfolder if it doesn't exist
 
                 // Check if the subfolder already exists in the database under the current parent folder
+//                Optional<DrcFolder> existingSubfolder = folderRepository.findByNameAndParentFolderId(subfolder.getName(), parentFolderEntity.getId());
+//                if (existingSubfolder.isEmpty()) {
+//                    // Create the subfolder entity and set the parent folder
+//                    DrcFolder subfolderEntity = new DrcFolder();
+//                    subfolderEntity.setName(subfolder.getName());
+//                    subfolderEntity.setPath(subfolderPath.toString());
+//                    subfolderEntity.setParentFolder(parentFolderEntity); // Set the parent folder
+//                    subfolderEntity.setCreatedAt(java.time.LocalDateTime.now()); // Manually set created_at
+//                    subfolderEntity.setUpdatedAt(java.time.LocalDateTime.now()); // Manually set updated_at
+//
+//                    // Save the subfolder in the database
+//                    folderRepository.save(subfolderEntity);
+//
+//                    // Create files in the subfolder (if any)
+//                    for (String file : subfolder.getFiles()) {
+//                        Path filePath = subfolderPath.resolve(file); // Correctly create file path
+//                        createFile(filePath.toString()); // Create file in subfolder (this could be database save too if needed)
+//                    }
+//
+//                    // Recursively create and save nested subfolders
+//                    if (subfolder.getSubfolders() != null && !subfolder.getSubfolders().isEmpty()) {
+//                        createFolderStructure(subfolderPath.toString(), subfolder.getSubfolders(), "Yes");
+//                    }
+//                }
+             // Check if the subfolder already exists in the database under the current parent folder
                 Optional<DrcFolder> existingSubfolder = folderRepository.findByNameAndParentFolderId(subfolder.getName(), parentFolderEntity.getId());
+                DrcFolder subfolderEntity;
+
                 if (existingSubfolder.isEmpty()) {
-                    // Create the subfolder entity and set the parent folder
-                    DrcFolder subfolderEntity = new DrcFolder();
+                    // Create the subfolder entity and set the parent folder if it doesn't exist
+                    subfolderEntity = new DrcFolder();
                     subfolderEntity.setName(subfolder.getName());
                     subfolderEntity.setPath(subfolderPath.toString());
                     subfolderEntity.setParentFolder(parentFolderEntity); // Set the parent folder
@@ -181,18 +208,24 @@ public class FileStorageService {
 
                     // Save the subfolder in the database
                     folderRepository.save(subfolderEntity);
+                } else {
+                    subfolderEntity = existingSubfolder.get();
+                }
 
-                    // Create files in the subfolder (if any)
-                    for (String file : subfolder.getFiles()) {
-                        Path filePath = subfolderPath.resolve(file); // Correctly create file path
-                        createFile(filePath.toString()); // Create file in subfolder (this could be database save too if needed)
-                    }
+                // Create files in the subfolder (if any)
+                for (String file : subfolder.getFiles()) {
+                    Path filePath = subfolderPath.resolve(file); // Correctly create file path
+                    createFile(filePath.toString()); // Create file in subfolder (this could be database save too if needed)
+                }
 
-                    // Recursively create and save nested subfolders
-                    if (subfolder.getSubfolders() != null && !subfolder.getSubfolders().isEmpty()) {
-                        createFolderStructure(subfolderPath.toString(), subfolder.getSubfolders(), "Yes");
+                // Recursively create and save nested subfolders if they exist
+                if (subfolder.getSubfolders() != null && !subfolder.getSubfolders().isEmpty()) {
+                    for (SubfolderDTO nestedSubfolder : subfolder.getSubfolders()) {
+                        // Call the createFolderStructure method recursively for nested subfolders
+                        createFolderStructure(subfolderPath.toString(), List.of(nestedSubfolder), "Yes");
                     }
                 }
+
             }
         }
     	

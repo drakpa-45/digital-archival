@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "category_master")
+@Table(name = "arc_category_master")
 public class CategoryMaster {
 
     @Id
