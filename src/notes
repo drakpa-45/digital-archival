@@ -1,0 +1,4 @@
+end-point-urls:
+
+#To check database-connection
+http://localhost:8088/actuator/health
